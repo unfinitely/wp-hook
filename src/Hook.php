@@ -35,7 +35,6 @@ class Hook
      */
     public function __construct()
     {
-
         $this->actions = [];
         $this->filters = [];
     }
