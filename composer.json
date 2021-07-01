@@ -3,7 +3,7 @@
   "description": "A utility class to register actions and filters with Object-oriented Programming (OOP)",
   "keywords": [
     "wordpress",
-    "hook",
+    "hooks",
     "action",
     "filter"
   ],
