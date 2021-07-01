@@ -1,5 +1,7 @@
 # WP Hook
 
+[![PHP](https://github.com/stringth/wp-hook/actions/workflows/php.yml/badge.svg)](https://github.com/stringth/wp-hook/actions/workflows/php.yml)
+
 > A library containing a small utility class, forked from [WordPress Plugin Boilerplate](https://wppb.me/), to register actions and filters with Object-oriented Programming (OOP).
 
 ## Why?
