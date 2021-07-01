@@ -21,23 +21,14 @@ final class Hook
 	 *
 	 * @var array<array{hook: string, callback: callable, priority: int, accepted_args: int}>
      */
-    protected $actions = [];
+    private $actions = [];
 
     /**
      * The array of filters registered with WordPress.
 	 *
 	 * @var array<array{hook: string, callback: callable, priority: int, accepted_args: int}>
      */
-    protected $filters = [];
-
-    /**
-     * Initialize the collections used to maintain the actions and filters.
-     */
-    public function __construct()
-    {
-        $this->actions = [];
-        $this->filters = [];
-    }
+    private $filters = [];
 
     /**
      * Add a new action to the collection to be registered with WordPress.
