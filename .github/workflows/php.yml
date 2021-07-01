@@ -158,9 +158,9 @@ jobs:
         if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
         uses: shivammathur/cache-extensions@v1
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php }}
           extensions: ${{ env.PHP_EXTENSIONS }}
-          key: php-${{ env.PHP_VERSION }}-ext
+          key: php-${{ matrix.php }}-ext
 
       - name: Setup PHP extensions cache
         if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
@@ -175,8 +175,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ needs.psalm.outputs.cache-dir-composer }}
-          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: php-${{ env.PHP_VERSION }}-composer-
+          key: php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ matrix.php }}-composer-
 
       - name: Setup WordPress cache
         if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
@@ -185,13 +185,13 @@ jobs:
           path: |
             /tmp/wordpress/
             /tmp/wordpress-tests-lib/
-          key: php-${{ env.PHP_VERSION }}-wp-${{ env.WP_VERSION }}
+          key: php-${{ matrix.php }}-wp-${{ matrix.wordpress }}
 
       - name: Setup PHP
         if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php }}
           extensions: ${{ env.PHP_EXTENSIONS }}
           tools: composer:v2
 
