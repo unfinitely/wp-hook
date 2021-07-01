@@ -1,6 +1,8 @@
 # WP Hook
 
-> A library containing a small utility class, forked from [https://wppb.me/](WordPress Plugin Boilerplate), to register actions and filters with Object-oriented Programming (OOP).
+[![PHP](https://github.com/stringth/wp-hook/actions/workflows/php.yml/badge.svg)](https://github.com/stringth/wp-hook/actions/workflows/php.yml)
+
+> A library containing a small utility class, forked from [WordPress Plugin Boilerplate](https://wppb.me/), to register actions and filters with Object-oriented Programming (OOP).
 
 ## Why?
 
@@ -20,7 +22,7 @@ function hello_world(): void
 }
 ```
 
-The problem with the above example is that WordPress may never execute the `hello_world` function since the `after_setup_theme` would have already done executing before the `init` hook. In some extreme cases, nested hooks [may cause an error] (https://wordpress.stackexchange.com/questions/147505/wp-insert-posts-fatal-error-maximum-function-nesting-level-of-100-reached-ab).
+The problem with the above example is that WordPress may never execute the `hello_world` function since the `after_setup_theme` would have already done executing before the `init` hook. In some extreme cases, nested hooks [may cause an error](https://wordpress.stackexchange.com/questions/147505/wp-insert-posts-fatal-error-maximum-function-nesting-level-of-100-reached-ab).
 
 The class in this library aims to help minimising this pitfall by maintaining the list of hooks and run them in one batch hence avoid _nesting_ in the first place.
 
@@ -76,6 +78,6 @@ $hook->run();
 
 ## References
 
-- [https://wppb.me/](WordPress Plugin Boilerplate)
-- [https://wordpress.stackexchange.com/questions/147505/wp-insert-posts-fatal-error-maximum-function-nesting-level-of-100-reached-ab](Maximum function nesting level of '100' reached, aborting!)
+- [WordPress Plugin Boilerplate](https://wppb.me/)
+- [Maximum function nesting level of '100' reached, aborting!](https://wordpress.stackexchange.com/questions/147505/wp-insert-posts-fatal-error-maximum-function-nesting-level-of-100-reached-ab)
 - [PHP OOP: Introduction](https://phptherightway.com/#object-oriented-programming)

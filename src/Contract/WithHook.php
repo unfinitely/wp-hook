@@ -10,7 +10,7 @@ interface WithHook
 {
 
     /**
-     * Add WordPress hooks.
+     * Add WordPress hooks to run.
      */
     public function hook( Hook &$hook ): void;
 }
