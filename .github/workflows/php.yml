@@ -72,7 +72,7 @@ jobs:
 
       - name: Analyze source code
         if: ${{ steps.file-diff-php.outputs.diff }}
-        run: composer psalm:diff
+        run: composer psalm
 
   phpcs:
     runs-on: ubuntu-latest
