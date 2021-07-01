@@ -47,34 +47,7 @@ $hook->addFilter( 'after_setup_theme', 'hello_world' );
 $hook->run();
 ```
 
-### Advanced usage
-
-This library also provides an interface `Stringth\WPHook\Contract\WithHook`. Any class that implements this must implement the hook method that will accept the `Stringth\WPHook\Hook` object. It may also help inforcing a clear structure when adding WordPress hook on a class.
-
-```php
-namespace Stringth\WPHook\Hook;
-
-use Stringth\WPHook\Hook\Contract\WithHook;
-
-class Feature implements WithHook
-{
-
-	/**
-	 * Add WordPress hooks.
-	 */
-	public function hook( Hook &$hook ): void
-	{
-		$hook->addAction( 'init', 'initialise' );
-	}
-}
-
-$hook = new Hook();
-
-$feature = new Feature();
-$feature->hook( $hook );
-
-$hook->run();
-```
+For a more advanced usage, check out **[the Wiki page](https://github.com/stringth/wp-hook/wiki)**.
 
 ## References
 
