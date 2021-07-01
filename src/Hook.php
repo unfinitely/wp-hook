@@ -13,7 +13,7 @@ namespace Stringth\WPHook;
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  */
-class Hook
+final class Hook
 {
 
     /**
