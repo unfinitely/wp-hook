@@ -1,0 +1,214 @@
+name: php
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+
+  psalm:
+    runs-on: ubuntu-latest
+
+    name: "Psalm: Static Code Analysis"
+
+    env:
+      PHP_VERSION: 7.2
+
+    # Map a step output to a job output
+    outputs:
+      file-diff-php: ${{ steps.file-diff.outputs.php }}
+      file-diff-composer: ${{ steps.file-diff.outputs.composer }}
+      cache-dir-composer: ${{ steps.composer-cache.outputs.dir }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get PHP file diff
+        uses: technote-space/get-diff-action@v3
+        id: file-diff-php
+        with:
+          SUFFIX_FILTER: .php
+          SEPARATOR: ','
+
+      - name: Get Composer file diff
+        uses: technote-space/get-diff-action@v3
+        id: file-diff-composer
+        with:
+          PREFIX_FILTER: composer
+          SEPARATOR: ','
+
+      - name: Save file diff
+        id: file-diff
+        run: |
+          echo "::set-output name=php::${{ steps.file-diff-php.outputs.diff }}"
+          echo "::set-output name=composer::${{ steps.file-diff-composer.outputs.diff }}"
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        if: ${{ steps.file-diff-php.outputs.diff || steps.file-diff-composer.outputs.diff }}
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Setup Composer cache
+        if: ${{ steps.file-diff-php.outputs.diff || steps.file-diff-composer.outputs.diff }}
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ env.PHP_VERSION }}-composer-
+
+      - name: Setup PHP
+        if: ${{ steps.file-diff-php.outputs.diff }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+
+      - name: Install dependencies
+        if: ${{ steps.file-diff-php.outputs.diff }}
+        run: composer install --prefer-dist
+
+      - name: Analyze source code
+        if: ${{ steps.file-diff-php.outputs.diff }}
+        run: composer psalm:diff
+
+  phpcs:
+    runs-on: ubuntu-latest
+    needs: psalm
+
+    name: "PHPCS: Code Styles Check"
+
+    env:
+      PHP_VERSION: 7.2
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Composer cache
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.cache-dir-composer }}
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.psalm.outputs.cache-dir-composer }}
+          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ env.PHP_VERSION }}-composer-
+
+      - name: Setup PHP
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.cache-dir-composer }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+
+      - name: Install dependencies
+        if: ${{ needs.psalm.outputs.file-diff-php }}
+        run: composer install --prefer-dist
+
+      - name: Check code standard
+        if: ${{ needs.psalm.outputs.file-diff-php }}
+        run: composer phpcs
+
+  phpunit:
+    runs-on: ubuntu-latest
+    needs: [ psalm, phpcs ]
+
+    name: "PHPUnit: WordPress Integration Tests"
+
+    env:
+      DB_NAME: wordpress_test
+      DB_PASS: wordpress_test
+      DB_ROOT_PASS: root
+      DB_USER: wordpress_test
+      PHP_EXTENSIONS: mysqli, redis
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [7.2, 7.3, 7.4]
+        wordpress: ['latest', '5.6', '5.5']
+
+    services:
+      database:
+        image: mysql:5.5
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_ROOT_PASS }}
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+          MYSQL_USER: ${{ env.DB_USER }}
+          MYSQL_PASSWORD: ${{ env.DB_PASS }}
+        ports:
+          - 3306:3306
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup PHP extensions cache environment
+        id: php-ext-cache
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: php-${{ env.PHP_VERSION }}-ext
+
+      - name: Setup PHP extensions cache
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.php-ext-cache.outputs.dir }}
+          key: ${{ steps.php-ext-cache.outputs.key }}
+          restore-keys: ${{ steps.php-ext-cache.outputs.key }}
+
+      - name: Setup Composer cache
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.psalm.outputs.cache-dir-composer }}
+          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ env.PHP_VERSION }}-composer-
+
+      - name: Setup WordPress cache
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        uses: actions/cache@v2
+        with:
+          path: |
+            /tmp/wordpress/
+            /tmp/wordpress-tests-lib/
+          key: php-${{ env.PHP_VERSION }}-wp-${{ env.WP_VERSION }}
+
+      - name: Setup PHP
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          tools: composer:v2
+
+      - name: Install dependencies
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        run: composer install --prefer-dist
+
+      - name: Run all test suite
+        if: ${{ needs.psalm.outputs.file-diff-php || needs.psalm.outputs.file-diff-composer }}
+        run: composer phpunit
+        env:
+          REDIS_HOST: localhost
+          WP_ENVIRONMENT_TYPE: development
+
+          # Variables used in bin/install-wp-tests.sh
+          WP_TESTS_DB_HOST: 127.0.0.1:${{ job.services.database.ports['3306'] }}
+          WP_TESTS_DB_NAME: ${{ env.DB_NAME }}
+          WP_TESTS_DB_PASSWORD: ${{ env.DB_PASS }}
+          WP_TESTS_DB_USER: ${{ env.DB_USER }}
+          WP_TESTS_VERSION: ${{ env.WP_VERSION }}

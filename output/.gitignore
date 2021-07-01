@@ -1,0 +1,34 @@
+# OS generated files #
+######################
+.DS_Store
+Thumbs.db
+
+# Logs and databases #
+######################
+*.sql
+
+# Compiled source #
+###################
+*.tar.gz
+*.zip
+
+# Graphics #
+############
+*.psd
+
+# Dependency directories #
+##########################
+node_modules/
+vendor/
+
+# Tests #
+#############
+artifacts/
+
+# Temporary #
+#############
+tmp/
+
+# Configs #
+###########
+wp-cli.local.yml
