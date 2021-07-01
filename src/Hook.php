@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Stringth\WPHook;
 
+// phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+
 /**
  * Register all actions and filters for the plugin.
  *
