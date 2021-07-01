@@ -8,7 +8,9 @@
 /.github export-ignore
 /.gitignore export-ignore
 /.vscode export-ignore
-/docker-compose.xml export-ignore
+/bin export-ignore
+/docker-compose.yml export-ignore
+/phpcs.xml export-ignore
 /phpunit.xml export-ignore
 /psalm.xml export-ignore
 /README.md export-ignore
