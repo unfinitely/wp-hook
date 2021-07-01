@@ -211,4 +211,4 @@ jobs:
           WP_TESTS_DB_NAME: ${{ env.DB_NAME }}
           WP_TESTS_DB_PASSWORD: ${{ env.DB_PASS }}
           WP_TESTS_DB_USER: ${{ env.DB_USER }}
-          WP_TESTS_VERSION: ${{ env.WP_VERSION }}
+          WP_TESTS_VERSION: ${{ matrix.wordpress }}
